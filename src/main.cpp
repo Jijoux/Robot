@@ -39,13 +39,12 @@ void loop() {
   }
   else {
     // Afficher la valeur retournée par le capteur
-    Serial.print("Valeur mesurée : ");
-    Serial.println(sensorValue);
-        if (sensorValue<500)Serial.println("un obstacle est sur le chemin");
-    {
-        if (sensorValue>500)Serial.println("aucun obstacle sur le chemin");
-    }
-    
+        if (sensorValue < 500) {
+            Serial.println("Un obstacle est sur le chemin");
+        }
+        else {
+            Serial.println("Aucun obstacle sur le chemin");
+        }
   }
   // Attendre 100ms
   delay(100);

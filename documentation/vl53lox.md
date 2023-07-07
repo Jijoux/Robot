@@ -1,4 +1,4 @@
-## Capteur VL53LOX-V2
+## Capteur VL53LOX
 
 C'est un capteur laser de type TOF (Time of Flight) qui envoie une lumière laser et mesure son temps de retour pour en déduire la distance de l'objet qui reflète cette lumière.
 Il est capable de mesurer à environs 2 mètres de distance.

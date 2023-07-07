@@ -10,6 +10,8 @@
             "includePath": [
                 "C:/Users/jbezi/Documents/projets/Robot/include",
                 "C:/Users/jbezi/Documents/projets/Robot/src",
+                "C:/Users/jbezi/Documents/projets/Robot/.pio/libdeps/lolin_s2_mini/VL53L0X",
+                "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/newlib/platform_include",
                 "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/freertos/include",
                 "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/freertos/include/esp_additions/freertos",
@@ -218,7 +220,6 @@
                 "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 ""
             ],
             "browse": {
@@ -226,6 +227,8 @@
                 "path": [
                     "C:/Users/jbezi/Documents/projets/Robot/include",
                     "C:/Users/jbezi/Documents/projets/Robot/src",
+                    "C:/Users/jbezi/Documents/projets/Robot/.pio/libdeps/lolin_s2_mini/VL53L0X",
+                    "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/newlib/platform_include",
                     "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/freertos/include",
                     "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/freertos/include/esp_additions/freertos",
@@ -434,7 +437,6 @@
                     "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                    "C:/Users/jbezi/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     ""
                 ]
             },

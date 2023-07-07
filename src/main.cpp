@@ -1,68 +1,52 @@
-#include "Arduino.h"
-#define GPIO_A1 6
-#define GPIO_A2 4
-#define GPIO_B1 2
-#define GPIO_B2 1
+#include <Arduino.h>
 
-#define PWM_A1 0
-#define PWM_A2 1
-#define PWM_B1 2 
-#define PWM_B2 3
-void setup(){
-// PWM ON A1
-   ledcSetup(PWM_A1, 5000, 8);
-   ledcAttachPin(GPIO_A1, PWM_A1);
-//PWM A2
-  ledcSetup(PWM_A2, 5000, 8);
-  ledcAttachPin(GPIO_A2, PWM_A2);
-//PWM B1
-  ledcSetup(PWM_B1, 5000, 8);
-  ledcAttachPin(GPIO_B1, PWM_B1);
-//PWM B2
-  ledcSetup(PWM_B2, 5000, 8);
-  ledcAttachPin(GPIO_B2, PWM_B2);
+// Charger les librairies nécessaires au capteur VL53L0X
+#include <Wire.h>
+#include <VL53L0X.h>
 
-}
-void avancer(uint8_t pourcentage) {
-  uint8_t vitesse = static_cast<uint8_t>(((static_cast<float>(pourcentage) / 100) * 55) + 200);
-  ledcWrite(PWM_A1, vitesse);
-  ledcWrite(PWM_A2, 0);
-  ledcWrite(PWM_B1, vitesse);
-  ledcWrite(PWM_B2, 0);
-}
-void droite(uint8_t pourcentage) {
-   uint8_t vitesse = static_cast<uint8_t>(((static_cast<float>(pourcentage) / 100) * 55) + 200);
-  ledcWrite(PWM_A1, 0);
-  ledcWrite(PWM_A2, vitesse);
-  ledcWrite(PWM_B1, vitesse);
-  ledcWrite(PWM_B2, 0);
+// Créer une instance de la librairie "VL53L0X" dans la variable "sensor"
+VL53L0X sensor;
+
+
+void setup() {
+  // Initialiser le port série avec une vitesse de 9600 bauds
+  Serial.begin(9600);
+
+  // Initialiser la librairie "Wire" (nécessaire pour I2C)
+  Wire.begin(8, 9);
+
+  // Initialiser le capteur. En cas de retour négatif, afficher une erreur sur le port série.
+  sensor.setTimeout(500);
+  if (!sensor.init()) {
+    while (1) {
+      Serial.println("Failed to detect and initialize sensor!");
+      delay(1000);
+    }
   }
-  void gauche(uint8_t pourcentage) {
-   uint8_t vitesse = static_cast<uint8_t>(((static_cast<float>(pourcentage) / 100) * 55) + 200);
-  ledcWrite(PWM_A1, vitesse);
-  ledcWrite(PWM_A2, 0);
-  ledcWrite(PWM_B1, 0);
-  ledcWrite(PWM_B2, vitesse);
-  }
-void reculer(uint8_t pourcentage) {
-   uint8_t vitesse = static_cast<uint8_t>(((static_cast<float>(pourcentage) / 100) * 55) + 200);
-  ledcWrite(PWM_A1, 0);
-  ledcWrite(PWM_A2, vitesse);
-  ledcWrite(PWM_B1, 0);
-  ledcWrite(PWM_B2, vitesse);
+
+  // Configurer le capteur pour retourner une mesure toutes les 100ms
+  sensor.startContinuous(100);
 }
 
-void loop(){
 
-  avancer(0);
-  delay(1000);
+void loop() {
+  // Lire la valeur mesurée par le capteur
+  uint16_t sensorValue = sensor.readRangeContinuousMillimeters();
 
-  droite(0);
-  delay(500);
-  
-  avancer(100);
-  delay(1000);
-  
-  gauche(50);
-  delay(1000);
+  // Afficher une erreur dans le cas où le capteur ne répond pas dans le temps imparti
+  if (sensor.timeoutOccurred()) {
+    Serial.println("Sensor timeout!");
+  }
+  else {
+    // Afficher la valeur retournée par le capteur
+    Serial.print("Valeur mesurée : ");
+    Serial.println(sensorValue);
+        if (sensorValue<500)Serial.println("un obstacle est sur le chemin");
+    {
+        if (sensorValue>500)Serial.println("aucun obstacle sur le chemin");
+    }
+    
+  }
+  // Attendre 100ms
+  delay(100);
 }

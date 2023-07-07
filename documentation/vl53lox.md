@@ -14,8 +14,8 @@ Nous allons le cabler comme ceci :
 
 - VIN => 3.3V (alimentation)
 - GND => GND (alimentation)
-- SCL => GPIO 8 (SCL => horloge)
-- SDA => GPIO 10 (SDA => données)
+- SCL => GPIO 9 (SCL => horloge)
+- SDA => GPIO 8 (SDA => données)
 
 
 ### Préparation
@@ -60,3 +60,57 @@ void loop() {
 
 Envoyer le code sur l'ESP32-S2 puis lancer la console série : `pio device monitor`.
 Ceci doit afficher le texte sur la console toutes les secondes.
+
+
+#### Tester le capteur
+
+```cpp
+#include <Arduino.h>
+
+// Charger les librairies nécessaires au capteur VL53L0X
+#include <Wire.h>
+#include <VL53L0X.h>
+
+// Créer une instance de la librairie "VL53L0X" dans la variable "sensor"
+VL53L0X sensor;
+
+
+void setup() {
+  // Initialiser le port série avec une vitesse de 9600 bauds
+  Serial.begin(9600);
+
+  // Initialiser la librairie "Wire" (nécessaire pour I2C)
+  Wire.begin();
+
+  // Initialiser le capteur. En cas de retour négatif, afficher une erreur sur le port série.
+  sensor.setTimeout(500);
+  if (!sensor.init()) {
+    while (1) {
+      Serial.println("Failed to detect and initialize sensor!");
+      delay(1000);
+    }
+  }
+
+  // Configurer le capteur pour retourner une mesure toutes les 100ms
+  sensor.startContinuous(100);
+}
+
+
+void loop() {
+  // Lire la valeur mesurée par le capteur
+  uint16_t sensorValue = sensor.readRangeContinuousMillimeters();
+
+  // Afficher une erreur dans le cas où le capteur ne répond pas dans le temps imparti
+  if (sensor.timeoutOccurred()) {
+    Serial.println("Sensor timeout!");
+  }
+  else {
+    // Afficher la valeur retournée par le capteur
+    Serial.print("Valeur mesurée : ");
+    Serial.println(sensorValue);
+  }
+
+  // Attendre 100ms
+  delay(100);
+}
+```

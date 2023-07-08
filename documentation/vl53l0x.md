@@ -1,4 +1,4 @@
-## Capteur VL53LOX
+## Capteur VL53L0X
 
 C'est un capteur laser de type TOF (Time of Flight) qui envoie une lumière laser et mesure son temps de retour pour en déduire la distance de l'objet qui reflète cette lumière.
 Il est capable de mesurer à environs 2 mètres de distance.
@@ -25,7 +25,8 @@ Nous allons commencer simplement avec un capteur.
 1. Brancher le capteur sur l'ESP32-S2
 1. Renommer le fichier `main.cpp` en `main.cpp.old` pour ne pas mélanger l'ancien code avec le nouveau
 1. Créer un nouveau fichier `main.cpp` et y ajouter l'include d'`Arduino.h` et les fonctions `setup` et `loop` (vides pour le moment)
-1. Télécharger et installer la librairie qui va gérer le capteur VL53LOX : `pio pkg install --library "pololu/VL53L0X@^1.3.1"`
+1. Télécharger et installer la librairie qui va gérer le capteur VL53L0X : `pio pkg install --library "pololu/VL53L0X@^1.3.1"`
+  ⚠️ TODO: il faut aussi ajouter Wire, en l'ajoutant dans `platformio.ini`
 
 
 ### Tests
@@ -80,7 +81,7 @@ void setup() {
   Serial.begin(9600);
 
   // Initialiser la librairie "Wire" (nécessaire pour I2C)
-  Wire.begin();
+  Wire.begin(8, 9);
 
   // Initialiser le capteur. En cas de retour négatif, afficher une erreur sur le port série.
   sensor.setTimeout(500);

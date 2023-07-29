@@ -1,87 +1,191 @@
 #include "Arduino.h"
 
-#define GPIO_A1 6
-#define GPIO_A2 4
-#define GPIO_B1 2
-#define GPIO_B2 1
+#include <Wire.h>
+#include <VL53L0X.h>
 
-#define PWM_A1 0
-#define PWM_A2 1
-#define PWM_B1 2
-#define PWM_B2 3
+VL53L0X sensor;
+
+// GPIO for TB6612FNG for motor 1
+#define MOTOR_1_IN1 35
+#define MOTOR_1_IN2 37
+#define MOTOR_1_PWM 39
+
+// GPIO for TB6612FNG for motor 2
+#define MOTOR_2_IN1 33
+#define MOTOR_2_IN2 18
+#define MOTOR_2_PWM 16
+
+// PWM for motors
+#define PWM_MOTOR_1 0
+#define PWM_MOTOR_2 1
 
 void setup() {
   Serial.begin(9600);
 
-  // Set PWM "0" (PWM_A1) on GPIO A1 (5kHz, 8 bits resolution)
-  ledcSetup(PWM_A1, 5000, 8);
-  ledcAttachPin(GPIO_A1, PWM_A1);
+  // 100 kHz per default. Can be 400 kHz too. But nothing else.
+  while (!Wire.begin(7, 9, 100 * 1000)) {
+    Serial.println("Failed to initialize I2C!");
+    delay(1000);
+  }
 
-  // Set PWM "1" (PWM_A2) on GPIO A2 (5kHz, 8 bits resolution)
-  ledcSetup(PWM_A2, 5000, 8);
-  ledcAttachPin(GPIO_A2, PWM_A2);
 
-  // Set PWM "2" (PWM_B1) on GPIO B1 (5kHz, 8 bits resolution)
-  ledcSetup(PWM_B1, 5000, 8);
-  ledcAttachPin(GPIO_B1, PWM_B1);
+  sensor.setTimeout(500);
 
-  // Set PWM "3" (PWM_B2) on GPIO B2 (5kHz, 8 bits resolution)
-  ledcSetup(PWM_B2, 5000, 8);
-  ledcAttachPin(GPIO_B2, PWM_B2);
+  // init(true) => 2v8 mode (for 3.3v compatibility). This is the default
+  while (!sensor.init(true)) {
+    Serial.println("Failed to detect and initialize sensor!");
+    delay(1000);
+  }
+
+  sensor.startContinuous(100);
+
+
+  // Set GPIO connected to TB6612FNG as output and low (0)
+  pinMode(MOTOR_1_IN1, OUTPUT);
+  digitalWrite(MOTOR_1_IN1, 0);
+
+  pinMode(MOTOR_1_IN2, OUTPUT);
+  digitalWrite(MOTOR_1_IN2, 0);
+
+  pinMode(MOTOR_2_IN1, OUTPUT);
+  digitalWrite(MOTOR_2_IN1, 0);
+
+  pinMode(MOTOR_2_IN2, OUTPUT);
+  digitalWrite(MOTOR_2_IN2, 0);
+
+
+  // PWM for motor 1 (22kHz, 8 bits resolution)
+  ledcSetup(PWM_MOTOR_1, 22000, 8);
+  ledcAttachPin(MOTOR_1_PWM, PWM_MOTOR_1);
+
+  // PWM for motor 2 (22kHz, 8 bits resolution)
+  ledcSetup(PWM_MOTOR_2, 22000, 8);
+  ledcAttachPin(MOTOR_2_PWM, PWM_MOTOR_2);
+}
+
+void stop() {
+  ledcWrite(PWM_MOTOR_1, 255);
+  ledcWrite(PWM_MOTOR_2, 255);
+
+  digitalWrite(MOTOR_1_IN1, 0);
+  digitalWrite(MOTOR_1_IN2, 0);
+
+  digitalWrite(MOTOR_2_IN1, 0);
+  digitalWrite(MOTOR_2_IN2, 0);
 }
 
 void forward(uint8_t percent) {
   uint8_t speed = static_cast<uint8_t>(((static_cast<float>(percent) / 100) * 55) + 200);
 
-  ledcWrite(PWM_A1, speed);
-  ledcWrite(PWM_A2, 0);
+  stop();
 
-  ledcWrite(PWM_B1, speed);
-  ledcWrite(PWM_B2, 0);
+  ledcWrite(PWM_MOTOR_1, speed);
+  ledcWrite(PWM_MOTOR_2, speed);
+
+  digitalWrite(MOTOR_1_IN1, 1);
+  digitalWrite(MOTOR_1_IN2, 0);
+
+  digitalWrite(MOTOR_2_IN1, 1);
+  digitalWrite(MOTOR_2_IN2, 0);
 }
 
 void backward(uint8_t percent) {
   uint8_t speed = static_cast<uint8_t>(((static_cast<float>(percent) / 100) * 55) + 200);
 
-  ledcWrite(PWM_A1, 0);
-  ledcWrite(PWM_A2, speed);
+  stop();
 
-  ledcWrite(PWM_B1, 0);
-  ledcWrite(PWM_B2, speed);
+  ledcWrite(PWM_MOTOR_1, speed);
+  ledcWrite(PWM_MOTOR_2, speed);
+
+  digitalWrite(MOTOR_1_IN1, 0);
+  digitalWrite(MOTOR_1_IN2, 1);
+
+  digitalWrite(MOTOR_2_IN1, 0);
+  digitalWrite(MOTOR_2_IN2, 1);
 }
 
 void spinCounterClockwise(uint8_t percent) {
   uint8_t speed = static_cast<uint8_t>(((static_cast<float>(percent) / 100) * 55) + 200);
 
-  ledcWrite(PWM_A1, 0);
-  ledcWrite(PWM_A2, speed);
+  stop();
 
-  ledcWrite(PWM_B1, speed);
-  ledcWrite(PWM_B2, 0);
+  ledcWrite(PWM_MOTOR_1, speed);
+  ledcWrite(PWM_MOTOR_2, speed);
+
+  digitalWrite(MOTOR_1_IN1, 1);
+  digitalWrite(MOTOR_1_IN2, 0);
+
+  digitalWrite(MOTOR_2_IN1, 0);
+  digitalWrite(MOTOR_2_IN2, 1);
 }
 
-void spinClockwise(uint8_t percent) {
-  uint8_t speed = static_cast<uint8_t>(((static_cast<float>(percent) / 100) * 55) + 200);
+void sensorReset() {
+  Serial.println("Resetting sensor");
 
-  ledcWrite(PWM_A1, speed);
-  ledcWrite(PWM_A2, 0);
+  // bool Wire.begin()
 
-  ledcWrite(PWM_B1, 0);
-  ledcWrite(PWM_B2, speed);
+  // Reset the sensor
+  sensor.writeReg(VL53L0X::SOFT_RESET_GO2_SOFT_RESET_N, 0x00);
+  delay(10);
+  // Releasing the reset
+  sensor.writeReg(VL53L0X::SOFT_RESET_GO2_SOFT_RESET_N, 0x01);
+
+  // Configuring the sensor
+  sensor.setTimeout(500);
+
+  bool sensorInitialization = sensor.init(true);
+  if (!sensorInitialization) {
+    Serial.println("Failed to detect and initialize sensor!");
+    return;
+  }
+  sensor.startContinuous(100);
 }
 
-void stop() {
-  ledcWrite(PWM_A1, 0);
-  ledcWrite(PWM_A2, 0);
 
-  ledcWrite(PWM_B1, 0);
-  ledcWrite(PWM_B2, 0);
-}
-
+bool test = false;
 void loop() {
-  spinCounterClockwise(0);
-  delay(1000);
+  // Lire la valeur mesurée par le capteur
+  uint16_t sensorValue = sensor.readRangeContinuousMillimeters();
 
-  spinClockwise(0);
-  delay(1000);
+  // // Afficher une erreur dans le cas où le capteur ne répond pas dans le temps imparti
+  // if (sensor.timeoutOccurred()) {
+  //   Serial.println("Sensor timeout!");
+  //   stop();
+  //   sensorReset();
+  //   delay(100);
+  //   return;
+  // }
+  // // The sensor seems to return 8191 when there is an error. In that case, we reset it.
+  // else if (sensorValue == 8191) {
+  //   Serial.println("Sensor error!");
+  //   stop();
+  //   sensorReset();
+  //   delay(100);
+  //   return;
+  // }
+
+  Serial.println(sensorValue);
+  Serial.println(Wire.getClock());
+
+
+
+  // if (sensorValue < 200) {
+  //   Serial.println("Un obstacle est sur le chemin");
+  //   spinCounterClockwise(25);
+  // }
+  // else {
+  //   Serial.println("Aucun obstacle sur le chemin");
+  //   forward(25);
+  // }
+
+  if (test) {
+    forward(25);
+  }
+  else {
+    backward(25);
+  }
+  test = !test;
+
+  // Attendre 100ms
+  delay(250);
 }
